@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import { Check, ChevronsUpDown } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -6,6 +8,25 @@ import { Table } from "@/components/ui/table";
 import { Network } from "@visx/network";
 import { Group } from "@visx/group";
 import { scaleLinear } from "@visx/scale";
+
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+
+interface options {
+  value: string;
+  label: string;
+}
 
 // Tipos para los datos del grafo
 interface NodeData {
@@ -89,7 +110,7 @@ const generateVertexNames = (size: number, useCase: string): string[] => {
   switch (useCase) {
     case "ciudades":
       return cities.slice(0, size);
-    case "vias-tren":
+    case "estaciones":
       return stations.slice(0, size);
     case "redes":
       return networks.slice(0, size);
@@ -97,9 +118,24 @@ const generateVertexNames = (size: number, useCase: string): string[] => {
       return [];
   }
 };
+const options = [
+  {
+    value: "estaciones",
+    label: "Estaciones de tren",
+  },
+  {
+    value: "ciudades",
+    label: "Ciudades",
+  },
+  {
+    value: "redes",
+    label: "Redes",
+  },
+];
 
 // El componente principal del Algoritmo de Dijkstra
 const DijkstraApp: React.FC = () => {
+  const [open, setOpen] = React.useState<boolean>(false);
   const [useCase, setUseCase] = useState<string>("");
   const [matrixSize, setMatrixSize] = useState<number | null>(null);
   const [matrix, setMatrix] = useState<Matrix>([]);
@@ -115,6 +151,7 @@ const DijkstraApp: React.FC = () => {
     string | number | null
   >(null);
   const [highlightedEdges, setHighlightedEdges] = useState<EdgeData[]>([]); // Aristas resaltadas para el camino mínimo
+  const [draggingNodeId, setDraggingNodeId] = useState<number | null>(null); // Nodo que se está arrastrando
 
   // Escalas para posicionar los nodos en el gráfico
   const xScale = scaleLinear<number>({
@@ -144,6 +181,10 @@ const DijkstraApp: React.FC = () => {
 
     const names = generateVertexNames(size, useCase);
     setVertexNames(names);
+    const mappedVertex = names.map((name) => ({
+      value: name,
+      label: name,
+    }));
 
     const newMatrix: Matrix = Array(size)
       .fill(0)
@@ -172,6 +213,15 @@ const DijkstraApp: React.FC = () => {
             return Math.floor(Math.random() * 100) + 1; // Peso aleatorio del camino
           })
       );
+
+    // Asegurarse de que la matriz sea simétrica
+    for (let i = 0; i < size; i++) {
+      for (let j = i + 1; j < size; j++) {
+        const value = matrix[i][j];
+        matrix[j][i] = value; // Sincroniza ida y vuelta
+      }
+    }
+
     return matrix;
   };
 
@@ -230,10 +280,11 @@ const DijkstraApp: React.FC = () => {
                   x={(xScale(source.x) + xScale(target.x)) / 2}
                   y={(yScale(source.y) + yScale(target.y)) / 2}
                   textAnchor="middle"
-                  fill="#333"
-                  fontSize={12}
+                  fill="#000"
+                  fontSize="1em"
+                  fontWeight={400}
                 >
-                  {edge.label}
+                  {edge.label} km
                 </text>
               </g>
             );
@@ -357,28 +408,60 @@ const DijkstraApp: React.FC = () => {
 
   return (
     <div className="container mx-auto p-6">
-      <h1 className="text-3xl font-bold mb-6">
-        Algoritmo de Dijkstra con Visx
-      </h1>
+      <h1 className="text-3xl font-bold mb-6">Calcular el camino mas corto</h1>
 
       {/* Selección del caso de uso */}
-      <Card className="mb-6">
-        <label className="block mb-2">Seleccione un caso de uso:</label>
-        <select
-          value={useCase}
-          onChange={handleUseCaseChange}
-          className="w-full p-2 border rounded-md"
-        >
-          <option value="">Seleccionar</option>
-          <option value="ciudades">Ciudades Capitales</option>
-          <option value="vias-tren">Estaciones de Tren</option>
-          <option value="redes">Nodos Informáticos</option>
-        </select>
+      <Card className="mb-6 p-4 max-w-60">
+        <label className="block mb-2">Selecciona un caso de uso:</label>
+        <Popover open={open} onOpenChange={setOpen}>
+          <PopoverTrigger asChild>
+            <Button
+              variant="outline"
+              role="combobox"
+              aria-expanded={open}
+              className="w-[200px] justify-between"
+            >
+              {useCase
+                ? options.find((opt) => opt.value === useCase)?.label
+                : "Selecciona un caso de uso..."}
+              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-[200px] p-0">
+            <Command>
+              <CommandInput placeholder="Search framework..." />
+              <CommandList>
+                <CommandEmpty>No se encontraron opciones válidas.</CommandEmpty>
+                <CommandGroup>
+                  {options.map((opt) => (
+                    <CommandItem
+                      key={opt.value}
+                      value={opt.value}
+                      onSelect={(currentValue) => {
+                        setUseCase(
+                          currentValue === useCase ? "" : currentValue
+                        );
+                        setOpen(false);
+                      }}
+                    >
+                      <Check
+                        className={cn(
+                          "mr-2 h-4 w-4",
+                          useCase === opt.value ? "opacity-100" : "opacity-0"
+                        )}
+                      />
+                      {opt.label}
+                    </CommandItem>
+                  ))}
+                </CommandGroup>
+              </CommandList>
+            </Command>
+          </PopoverContent>
+        </Popover>
       </Card>
-
       {/* Formulario para ingresar el tamaño de la matriz */}
       {useCase && (
-        <form onSubmit={handleMatrixSizeSubmit} className="mb-6">
+        <form onSubmit={handleMatrixSizeSubmit} className="mb-6 max-w-60">
           <Card className="p-4">
             <label className="block mb-2">
               Ingrese el número de nodos (entre 8 y 16):
@@ -389,10 +472,10 @@ const DijkstraApp: React.FC = () => {
               min="8"
               max="16"
               required
-              className="mb-4"
+              className="mb-4 w-14"
             />
             <Button type="submit" className="w-full">
-              Generar Matriz
+              Generar Matriz 🕚
             </Button>
           </Card>
         </form>
@@ -405,48 +488,53 @@ const DijkstraApp: React.FC = () => {
         </Button>
       )}
 
-      {/* Visualización de la matriz de distancias */}
-      {matrixSize && (
-        <div className="mb-6">
-          <h3 className="text-xl font-semibold mb-4">
-            Matriz de distancias para {useCase}
-          </h3>
-          <Table className="table-auto w-full mb-4">
-            <thead>
-              <tr>
-                <th></th>
-                {vertexNames.map((name, i) => (
-                  <th key={i} className="px-4 py-2">
-                    {name}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {matrix.map((row, i) => (
-                <tr key={i}>
-                  <td className="px-4 py-2 font-semibold">{vertexNames[i]}</td>
-                  {row.map((val, j) => (
-                    <td key={j} className="px-4 py-2">
-                      <Input
-                        type="number"
-                        value={val}
-                        onChange={(e) => {
-                          const updatedMatrix = [...matrix];
-                          updatedMatrix[i][j] =
-                            parseInt(e.target.value, 10) || 0;
-                          setMatrix(updatedMatrix);
-                        }}
-                      />
-                    </td>
+      <Card className="mb-6 p-4">
+        {/* Visualización de la matriz de distancias */}
+        {matrixSize && (
+          <div className="overflow-x-auto mb-6">
+            <h3 className="text-xl font-semibold mb-4">
+              Matriz de distancias en kilómetros para {useCase}
+            </h3>
+            <Table className="table-auto w-full min-w-max">
+              <thead>
+                <tr>
+                  <th className="px-4 py-2"></th>
+                  {vertexNames.map((name, i) => (
+                    <th key={i} className="px-4 py-2">
+                      {name}
+                    </th>
                   ))}
                 </tr>
-              ))}
-            </tbody>
-          </Table>
-        </div>
-      )}
-
+              </thead>
+              <tbody>
+                {matrix.map((row, i) => (
+                  <tr key={i}>
+                    <td className="px-4 py-2 font-semibold">
+                      {vertexNames[i]}
+                    </td>
+                    {row.map((val, j) => (
+                      <td key={j} className="px-4 py-2">
+                        <Input
+                          type="number"
+                          value={val}
+                          className="w-20"
+                          onChange={(e) => {
+                            const updatedMatrix = [...matrix];
+                            const newValue = parseInt(e.target.value, 10) || 0;
+                            updatedMatrix[i][j] = newValue;
+                            updatedMatrix[j][i] = newValue; // Sincroniza ida y vuelta
+                            setMatrix(updatedMatrix);
+                          }}
+                        />
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
+          </div>
+        )}
+      </Card>
       {/* Botón para generar grafo */}
       {matrixSize && matrix.length > 0 && (
         <Button onClick={generateGraph} className="mb-6">
@@ -476,10 +564,11 @@ const DijkstraApp: React.FC = () => {
           <div className="flex gap-4">
             <div className="w-1/2">
               <label className="block mb-2">Punto A:</label>
+
               <select
                 value={pointA}
                 onChange={(e) => setPointA(e.target.value)}
-                className="w-full p-2 border rounded-md"
+                className="w-full p-2 border rounded-md  text-white"
               >
                 <option value="">Seleccionar</option>
                 {vertexNames.map((name, i) => (
@@ -494,7 +583,7 @@ const DijkstraApp: React.FC = () => {
               <select
                 value={pointB}
                 onChange={(e) => setPointB(e.target.value)}
-                className="w-full p-2 border rounded-md"
+                className="w-full p-2 border rounded-md  text-white"
               >
                 <option value="">Seleccionar</option>
                 {vertexNames.map((name, i) => (
