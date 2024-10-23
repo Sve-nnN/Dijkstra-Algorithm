@@ -5,10 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Table } from "@/components/ui/table";
-import { Network } from "@visx/network";
 import { Group } from "@visx/group";
 import { scaleLinear } from "@visx/scale";
-
 import {
   Command,
   CommandEmpty,
@@ -23,7 +21,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 
-interface options {
+interface Option {
   value: string;
   label: string;
 }
@@ -70,6 +68,7 @@ const generateVertexNames = (size: number, useCase: string): string[] => {
     "Oslo",
     "Copenhague",
   ];
+
   const stations = [
     "Atocha",
     "Sants",
@@ -88,6 +87,7 @@ const generateVertexNames = (size: number, useCase: string): string[] => {
     "Albacete",
     "Alicante",
   ];
+
   const networks = [
     "AWS East",
     "AWS West",
@@ -118,24 +118,16 @@ const generateVertexNames = (size: number, useCase: string): string[] => {
       return [];
   }
 };
-const options = [
-  {
-    value: "estaciones",
-    label: "Estaciones de tren",
-  },
-  {
-    value: "ciudades",
-    label: "Ciudades",
-  },
-  {
-    value: "redes",
-    label: "Redes",
-  },
+
+const options: Option[] = [
+  { value: "estaciones", label: "Estaciones de tren" },
+  { value: "ciudades", label: "Ciudades" },
+  { value: "redes", label: "Redes" },
 ];
 
 // El componente principal del Algoritmo de Dijkstra
 const DijkstraApp: React.FC = () => {
-  const [open, setOpen] = React.useState<boolean>(false);
+  const [open, setOpen] = useState<boolean>(false);
   const [useCase, setUseCase] = useState<string>("");
   const [matrixSize, setMatrixSize] = useState<number | null>(null);
   const [matrix, setMatrix] = useState<Matrix>([]);
@@ -151,40 +143,22 @@ const DijkstraApp: React.FC = () => {
     string | number | null
   >(null);
   const [highlightedEdges, setHighlightedEdges] = useState<EdgeData[]>([]); // Aristas resaltadas para el camino mínimo
-  const [draggingNodeId, setDraggingNodeId] = useState<number | null>(null); // Nodo que se está arrastrando
 
   // Escalas para posicionar los nodos en el gráfico
-  const xScale = scaleLinear<number>({
-    domain: [0, 100],
-    range: [0, 800],
-  });
-
-  const yScale = scaleLinear<number>({
-    domain: [0, 100],
-    range: [0, 600],
-  });
-
-  // Maneja la selección del caso de uso
-  const handleUseCaseChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const selectedValue = e.target.value;
-    setUseCase(selectedValue);
-  };
+  const xScale = scaleLinear<number>({ domain: [0, 100], range: [0, 800] });
+  const yScale = scaleLinear<number>({ domain: [0, 100], range: [0, 600] });
 
   // Maneja la creación inicial de la matriz cuando el usuario especifica el tamaño
   const handleMatrixSizeSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const size = parseInt(
-      (e.target as HTMLFormElement).elements.namedItem("size")?.value || "0",
-      10
-    );
+    const sizeValue = (e.target as HTMLFormElement).elements.namedItem("size");
+    const value =
+      (sizeValue instanceof HTMLInputElement ? sizeValue.value : "0") || "0";
+    const size = parseInt(value, 10);
     setMatrixSize(size);
 
     const names = generateVertexNames(size, useCase);
     setVertexNames(names);
-    const mappedVertex = names.map((name) => ({
-      value: name,
-      label: name,
-    }));
 
     const newMatrix: Matrix = Array(size)
       .fill(0)
@@ -238,11 +212,7 @@ const DijkstraApp: React.FC = () => {
     for (let i = 0; i < matrix.length; i++) {
       for (let j = 0; j < matrix.length; j++) {
         if (matrix[i][j] !== 0) {
-          edges.push({
-            source: i,
-            target: j,
-            label: String(matrix[i][j]),
-          });
+          edges.push({ source: i, target: j, label: String(matrix[i][j]) });
         }
       }
     }
@@ -251,82 +221,80 @@ const DijkstraApp: React.FC = () => {
   };
 
   // Renderiza el grafo utilizando `visx`
-  const renderGraph = () => {
-    return (
-      <svg width={800} height={600}>
-        <Group>
-          {/* Renderizado de las aristas */}
-          {graphData.edges.map((edge, index) => {
-            const source = graphData.nodes[edge.source];
-            const target = graphData.nodes[edge.target];
-            const isHighlighted = highlightedEdges.some(
-              (he) => he.source === edge.source && he.target === edge.target
-            );
+  const renderGraph = () => (
+    <svg width={800} height={600}>
+      <Group>
+        {/* Renderizado de las aristas */}
+        {graphData.edges.map((edge, index) => {
+          const source = graphData.nodes[edge.source];
+          const target = graphData.nodes[edge.target];
+          const isHighlighted = highlightedEdges.some(
+            (he) => he.source === edge.source && he.target === edge.target
+          );
 
-            return (
-              <g key={`edge-${index}`}>
-                {/* Línea de la arista */}
-                <line
-                  x1={xScale(source.x)}
-                  y1={yScale(source.y)}
-                  x2={xScale(target.x)}
-                  y2={yScale(target.y)}
-                  stroke={isHighlighted ? "red" : "#999"}
-                  strokeWidth={isHighlighted ? 3 : 2}
-                  markerEnd="url(#arrowhead)" // Añadir flecha
-                />
-                {/* Etiqueta de la arista */}
-                <text
-                  x={(xScale(source.x) + xScale(target.x)) / 2}
-                  y={(yScale(source.y) + yScale(target.y)) / 2}
-                  textAnchor="middle"
-                  fill="#000"
-                  fontSize="1em"
-                  fontWeight={400}
-                >
-                  {edge.label} km
-                </text>
-              </g>
-            );
-          })}
-
-          {/* Renderizado de los nodos */}
-          {graphData.nodes.map((node) => (
-            <g key={`node-${node.id}`}>
-              <circle
-                cx={xScale(node.x)}
-                cy={yScale(node.y)}
-                r={15}
-                fill="#4a90e2"
+          return (
+            <g key={`edge-${index}`}>
+              {/* Línea de la arista */}
+              <line
+                x1={xScale(source.x)}
+                y1={yScale(source.y)}
+                x2={xScale(target.x)}
+                y2={yScale(target.y)}
+                stroke={isHighlighted ? "red" : "#999"}
+                strokeWidth={isHighlighted ? 3 : 2}
+                markerEnd="url(#arrowhead)" // Añadir flecha
               />
+              {/* Etiqueta de la arista */}
               <text
-                x={xScale(node.x)}
-                y={yScale(node.y) - 20}
+                x={(xScale(source.x) + xScale(target.x)) / 2}
+                y={(yScale(source.y) + yScale(target.y)) / 2}
                 textAnchor="middle"
-                fill="#333"
+                fill="#000"
+                fontSize="1em"
+                fontWeight={400}
               >
-                {node.label}
+                {edge.label} km
               </text>
             </g>
-          ))}
+          );
+        })}
 
-          {/* Definición del marcador para la flecha */}
-          <defs>
-            <marker
-              id="arrowhead"
-              markerWidth="10"
-              markerHeight="7"
-              refX="10"
-              refY="3.5"
-              orient="auto"
+        {/* Renderizado de los nodos */}
+        {graphData.nodes.map((node) => (
+          <g key={`node-${node.id}`}>
+            <circle
+              cx={xScale(node.x)}
+              cy={yScale(node.y)}
+              r={15}
+              fill="#4a90e2"
+            />
+            <text
+              x={xScale(node.x)}
+              y={yScale(node.y) - 20}
+              textAnchor="middle"
+              fill="#333"
             >
-              <polygon points="0 0, 10 3.5, 0 7" fill="#999" />
-            </marker>
-          </defs>
-        </Group>
-      </svg>
-    );
-  };
+              {node.label}
+            </text>
+          </g>
+        ))}
+
+        {/* Definición del marcador para la flecha */}
+        <defs>
+          <marker
+            id="arrowhead"
+            markerWidth="10"
+            markerHeight="7"
+            refX="10"
+            refY="3.5"
+            orient="auto"
+          >
+            <polygon points="0 0, 10 3.5, 0 7" fill="#999" />
+          </marker>
+        </defs>
+      </Group>
+    </svg>
+  );
 
   // Maneja el cálculo del camino más corto usando Dijkstra
   const handleCalculateShortestPath = () => {
@@ -391,7 +359,8 @@ const DijkstraApp: React.FC = () => {
 
     while (previous[u] !== null) {
       path.unshift(u);
-      u = previous[u];
+      // Asignar un valor predeterminado o manejar el caso de null
+      u = previous[u] !== null ? (previous[u] as number) : -1; // Asigna -1 si previous[u] es null
     }
 
     if (path.length > 0) {
@@ -408,7 +377,7 @@ const DijkstraApp: React.FC = () => {
 
   return (
     <div className="container mx-auto p-6">
-      <h1 className="text-3xl font-bold mb-6">Calcular el camino mas corto</h1>
+      <h1 className="text-3xl font-bold mb-6">Calcular el camino más corto</h1>
 
       {/* Selección del caso de uso */}
       <Card className="mb-6 p-4 max-w-60">
@@ -459,6 +428,7 @@ const DijkstraApp: React.FC = () => {
           </PopoverContent>
         </Popover>
       </Card>
+
       {/* Formulario para ingresar el tamaño de la matriz */}
       {useCase && (
         <form onSubmit={handleMatrixSizeSubmit} className="mb-6 max-w-60">
@@ -535,6 +505,7 @@ const DijkstraApp: React.FC = () => {
           </div>
         )}
       </Card>
+
       {/* Botón para generar grafo */}
       {matrixSize && matrix.length > 0 && (
         <Button onClick={generateGraph} className="mb-6">
@@ -564,11 +535,10 @@ const DijkstraApp: React.FC = () => {
           <div className="flex gap-4">
             <div className="w-1/2">
               <label className="block mb-2">Punto A:</label>
-
               <select
                 value={pointA}
                 onChange={(e) => setPointA(e.target.value)}
-                className="w-full p-2 border rounded-md  text-white"
+                className="w-full p-2 border rounded-md text-black"
               >
                 <option value="">Seleccionar</option>
                 {vertexNames.map((name, i) => (
@@ -583,7 +553,7 @@ const DijkstraApp: React.FC = () => {
               <select
                 value={pointB}
                 onChange={(e) => setPointB(e.target.value)}
-                className="w-full p-2 border rounded-md  text-white"
+                className="w-full p-2 border rounded-md text-black"
               >
                 <option value="">Seleccionar</option>
                 {vertexNames.map((name, i) => (
