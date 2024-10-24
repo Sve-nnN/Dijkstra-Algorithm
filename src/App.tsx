@@ -1,4 +1,4 @@
-import Dijkstra from "./components/Dijkstra/index.tsx";
+import Dijkstra from "./components/Dijkstra.tsx";
 
 function App() {
   return <Dijkstra />;
