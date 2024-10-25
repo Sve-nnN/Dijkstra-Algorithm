@@ -35,7 +35,7 @@ const CaseSelection: React.FC<CaseSelectionProps> = ({
   const [open, setOpen] = React.useState<boolean>(false);
 
   return (
-    <Card className="mb-6 p-4 max-w-60">
+    <Card className="mb-6 p-4 w-auto animate-fade-in">
       <label className="block mb-2">Selecciona un caso de uso:</label>
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
@@ -43,7 +43,7 @@ const CaseSelection: React.FC<CaseSelectionProps> = ({
             variant="outline"
             role="combobox"
             aria-expanded={open}
-            className="w-[200px] justify-between"
+            className="w-min justify-between shadow-lg"
           >
             {selectedOption
               ? options.find((opt) => opt.value === selectedOption)?.label

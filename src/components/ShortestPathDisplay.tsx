@@ -13,7 +13,7 @@ const ShortestPathDisplay: React.FC<ShortestPathDisplayProps> = ({
   return (
     <>
       {shortestPath.length > 0 && (
-        <Card className="p-4">
+        <Card className="p-4 animate-fade-in">
           <h3 className="text-xl font-semibold mb-2">Camino más corto</h3>
           <p>
             <strong>Camino:</strong> {shortestPath.join(" → ")}

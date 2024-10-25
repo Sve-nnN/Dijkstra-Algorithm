@@ -18,8 +18,11 @@ const MatrixSizeForm: React.FC<MatrixSizeFormProps> = ({ onSubmit }) => {
   };
 
   return (
-    <form onSubmit={handleMatrixSizeSubmit} className="mb-6 max-w-60">
-      <Card className="p-4">
+    <form
+      onSubmit={handleMatrixSizeSubmit}
+      className="mb-6 max-w-60 animate-fade-in"
+    >
+      <Card className="p-4 min-w-min ">
         <label className="block mb-2">
           Ingrese el número de nodos (entre 8 y 16):
         </label>
@@ -29,7 +32,7 @@ const MatrixSizeForm: React.FC<MatrixSizeFormProps> = ({ onSubmit }) => {
           min="8"
           max="16"
           required
-          className="mb-4 w-14"
+          className="mb-4 w-min shadow-lg"
         />
         <Button type="submit" className="w-full">
           Generar Matriz 🕚
