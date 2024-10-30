@@ -18,6 +18,9 @@ const DistanceMatrix: React.FC<DistanceMatrixProps> = ({
       <h3 className="text-xl font-semibold mb-4">
         Matriz de distancias en kilómetros
       </h3>
+ <label className="block mb-2">
+ La matriz tendrá datos de la distancia (en km) de datos relacionados al caso seleccionado
+        </label>
       <Card className="mb-4 p-4 shadow-lg">
         <Table className="table-auto w-full min-w-max">
           <thead>
