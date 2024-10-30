@@ -1,8 +1,8 @@
-"use client";
-import * as React from "react";
-import { CaretSortIcon, CheckIcon } from "@radix-ui/react-icons";
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
+"use client"; // Indica que este módulo debe ser ejecutado en el cliente
+import * as React from "react"; // Importa React
+import { CaretSortIcon, CheckIcon } from "@radix-ui/react-icons"; // Importa íconos de Radix UI
+import { cn } from "@/lib/utils"; // Importa la función de utilidad para la manipulación de clases
+import { Button } from "@/components/ui/button"; // Importa el componente Button de la carpeta de UI
 import {
   Command,
   CommandEmpty,
@@ -10,42 +10,45 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from "@/components/ui/command";
+} from "@/components/ui/command"; // Importa componentes relacionados con el comando de la carpeta de UI
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover";
-import { Card } from "@/components/ui/card";
+} from "@/components/ui/popover"; // Importa componentes relacionados con Popover de la carpeta de UI
+import { Card } from "@/components/ui/card"; // Importa el componente Card de la carpeta de UI
 
+// Define la interfaz para los elementos del Combobox
 interface ComboboxItem {
-  value: string;
-  label: string;
+  value: string; // Valor del elemento
+  label: string; // Etiqueta que se muestra al usuario
 }
 
+// Define las propiedades del componente Combobox
 interface ComboboxProps {
-  items: ComboboxItem[];
-  value: string;
-  onChange: (value: string) => void;
-  placeholder: string;
+  items: ComboboxItem[]; // Array de elementos que se mostrarán en el Combobox
+  value: string; // Valor actualmente seleccionado
+  onChange: (value: string) => void; // Función que se llama al cambiar el valor
+  placeholder: string; // Texto de marcador de posición
 }
 
+// Componente funcional Combobox
 const Combobox: React.FC<ComboboxProps> = ({
   items,
   value,
   onChange,
   placeholder,
 }) => {
-  const [open, setOpen] = React.useState(false);
+  const [open, setOpen] = React.useState(false); // Estado para controlar la apertura del Popover
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button
-          variant="outline"
-          role="combobox"
-          aria-expanded={open}
-          className="w-full justify-between shadow-lg"
+          variant="outline" // Estilo del botón
+          role="combobox" // Atributo ARIA para accesibilidad
+          aria-expanded={open} // Indica si el Combobox está abierto
+          className="w-full justify-between shadow-lg" // Clases CSS para el estilo
         >
           {value
             ? items.find((item) => item.value === value)?.label
@@ -56,7 +59,7 @@ const Combobox: React.FC<ComboboxProps> = ({
       <PopoverContent className="w-full p-0">
         <Command>
           <CommandInput
-            placeholder={`Search ${placeholder.toLowerCase()}...`}
+            placeholder={`Search ${placeholder.toLowerCase()}...`} // Marcador de búsqueda
             className="h-9"
           />
           <CommandList>
@@ -64,18 +67,18 @@ const Combobox: React.FC<ComboboxProps> = ({
             <CommandGroup>
               {items.map((item) => (
                 <CommandItem
-                  key={item.value}
-                  value={item.value}
+                  key={item.value} // Llave única para cada elemento
+                  value={item.value} // Valor del elemento
                   onSelect={(currentValue: string) => {
-                    onChange(currentValue === value ? "" : currentValue);
-                    setOpen(false);
+                    onChange(currentValue === value ? "" : currentValue); // Llama a onChange para actualizar el valor
+                    setOpen(false); // Cierra el Popover
                   }}
                 >
-                  {item.label}
+                  {item.label} {/* Muestra la etiqueta del elemento */}
                   <CheckIcon
                     className={cn(
-                      "ml-auto h-4 w-4",
-                      value === item.value ? "opacity-100" : "opacity-0"
+                      "ml-auto h-4 w-4", // Clases CSS para el icono
+                      value === item.value ? "opacity-100" : "opacity-0" // Cambia la opacidad si está seleccionado
                     )}
                   />
                 </CommandItem>
@@ -88,15 +91,17 @@ const Combobox: React.FC<ComboboxProps> = ({
   );
 };
 
+// Define las propiedades del componente PointSelection
 interface PointSelectionProps {
-  vertexNames: string[];
-  pointA: string;
-  setPointA: (value: string) => void;
-  pointB: string;
-  setPointB: (value: string) => void;
-  onCalculate: () => void;
+  vertexNames: string[]; // Nombres de los vértices disponibles para selección
+  pointA: string; // Valor del punto A seleccionado
+  setPointA: (value: string) => void; // Función para actualizar el punto A
+  pointB: string; // Valor del punto B seleccionado
+  setPointB: (value: string) => void; // Función para actualizar el punto B
+  onCalculate: () => void; // Función para calcular el camino mínimo
 }
 
+// Componente funcional PointSelection
 const PointSelection: React.FC<PointSelectionProps> = ({
   vertexNames,
   pointA,
@@ -105,7 +110,7 @@ const PointSelection: React.FC<PointSelectionProps> = ({
   setPointB,
   onCalculate,
 }) => {
-  const items = vertexNames.map((name) => ({ value: name, label: name }));
+  const items = vertexNames.map((name) => ({ value: name, label: name })); // Crea los elementos del Combobox a partir de los nombres de los vértices
 
   return (
     <Card className="mb-6 p-4 animate-fade-in">
@@ -116,19 +121,19 @@ const PointSelection: React.FC<PointSelectionProps> = ({
         <div className="w-1/2">
           <label className="block mb-2">Punto A:</label>
           <Combobox
-            items={items}
-            value={pointA}
-            onChange={setPointA}
-            placeholder="Punto A"
+            items={items} // Elementos para el Combobox
+            value={pointA} // Valor seleccionado para el punto A
+            onChange={setPointA} // Función para actualizar el punto A
+            placeholder="Punto A" // Texto de marcador de posición
           />
         </div>
         <div className="w-1/2">
           <label className="block mb-2">Punto B:</label>
           <Combobox
-            items={items}
-            value={pointB}
-            onChange={setPointB}
-            placeholder="Punto B"
+            items={items} // Elementos para el Combobox
+            value={pointB} // Valor seleccionado para el punto B
+            onChange={setPointB} // Función para actualizar el punto B
+            placeholder="Punto B" // Texto de marcador de posición
           />
         </div>
       </div>
@@ -139,4 +144,5 @@ const PointSelection: React.FC<PointSelectionProps> = ({
   );
 };
 
+// Exporta el componente PointSelection para que pueda ser utilizado en otras partes de la aplicación
 export default PointSelection;
