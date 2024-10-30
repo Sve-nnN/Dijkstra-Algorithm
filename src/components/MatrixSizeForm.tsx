@@ -24,7 +24,7 @@ const MatrixSizeForm: React.FC<MatrixSizeFormProps> = ({ onSubmit }) => {
     >
       <Card className="p-4 min-w-min ">
         <label className="block mb-2">
-          Ingrese el número de nodos (entre 8 y 16):
+          Escriba un número n. Dependiendo de su caso habrá n² datos (entre 8 y 16):
         </label>
         <Input
           type="number"
