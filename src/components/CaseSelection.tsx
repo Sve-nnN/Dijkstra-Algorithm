@@ -1,11 +1,12 @@
-import React from "react";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+// Importaciones de bibliotecas y componentes necesarios
+import React from "react"; // Importa React para crear componentes
+import { Button } from "@/components/ui/button"; // Importa el componente Button de la carpeta de UI
+import { Card } from "@/components/ui/card"; // Importa el componente Card de la carpeta de UI
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover";
+} from "@/components/ui/popover"; // Importa componentes relacionados con Popover de la carpeta de UI
 import {
   Command,
   CommandGroup,
@@ -13,25 +14,29 @@ import {
   CommandItem,
   CommandList,
   CommandEmpty,
-} from "@/components/ui/command";
-import { Check, ChevronsUpDown } from "lucide-react";
+} from "@/components/ui/command"; // Importa componentes relacionados con comandos de la carpeta de UI
+import { Check, ChevronsUpDown } from "lucide-react"; // Importa iconos de la biblioteca lucide-react
 
+// Define la interfaz para las opciones disponibles
 interface Option {
-  value: string;
-  label: string;
+  value: string; // El valor único de la opción
+  label: string; // La etiqueta de la opción que se mostrará al usuario
 }
 
+// Define las propiedades del componente CaseSelection
 interface CaseSelectionProps {
-  options: Option[];
-  selectedOption: string;
-  onSelect: (value: string) => void;
+  options: Option[]; // Array de opciones que se pueden seleccionar
+  selectedOption: string; // Opción actualmente seleccionada
+  onSelect: (value: string) => void; // Función que se llama cuando se selecciona una opción
 }
 
+// Define el componente funcional CaseSelection
 const CaseSelection: React.FC<CaseSelectionProps> = ({
   options,
   selectedOption,
   onSelect,
 }) => {
+  // Estado local que controla si el Popover está abierto o cerrado
   const [open, setOpen] = React.useState<boolean>(false);
 
   return (
@@ -87,4 +92,5 @@ const CaseSelection: React.FC<CaseSelectionProps> = ({
   );
 };
 
+// Exporta el componente para que pueda ser utilizado en otras partes de la aplicación
 export default CaseSelection;
