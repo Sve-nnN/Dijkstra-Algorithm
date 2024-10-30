@@ -1,4 +1,4 @@
-"use client"; // Indica que este módulo debe ser ejecutado en el cliente
+ra"use client"; // Indica que este módulo debe ser ejecutado en el cliente
 import * as React from "react"; // Importa React
 import { CaretSortIcon, CheckIcon } from "@radix-ui/react-icons"; // Importa íconos de Radix UI
 import { cn } from "@/lib/utils"; // Importa la función de utilidad para la manipulación de clases
@@ -63,7 +63,7 @@ const Combobox: React.FC<ComboboxProps> = ({
             className="h-9"
           />
           <CommandList>
-            <CommandEmpty>No {placeholder.toLowerCase()} found.</CommandEmpty>
+            <CommandEmpty>No {placeholder.toLowerCase()} encontrado.</CommandEmpty>
             <CommandGroup>
               {items.map((item) => (
                 <CommandItem
