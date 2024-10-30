@@ -37,7 +37,7 @@ const MatrixSizeForm: React.FC<MatrixSizeFormProps> = ({ onSubmit }) => {
           required // Hace que este campo sea obligatorio
           className="mb-4 w-min shadow-lg" // Clases CSS para el estilo
         />
-        <Button type="submit" className="w-full"> // Botón para enviar el formulario
+        <Button type="submit" className="w-full">
           Generar Matriz 🕚
         </Button>
       </Card>
