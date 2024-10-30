@@ -1,11 +1,11 @@
-import React, { useState } from "react";
-import CaseSelection from "./CaseSelection";
-import MatrixSizeForm from "./MatrixSizeForm";
-import DistanceMatrix from "./DistanceMatrix";
-import GraphVisualization from "./GraphVisualization";
-import PointSelection from "./PointSelection";
-import ShortestPathDisplay from "./ShortestPathDisplay";
-import { Button } from "@/components/ui/button";
+import React, { useState } from "react"; // Importa React y useState para manejar el estado
+import CaseSelection from "./CaseSelection"; // Importa el componente para seleccionar el caso de uso
+import MatrixSizeForm from "./MatrixSizeForm"; // Importa el componente para definir el tamaño de la matriz
+import DistanceMatrix from "./DistanceMatrix"; // Importa el componente para mostrar la matriz de distancias
+import GraphVisualization from "./GraphVisualization"; // Importa el componente para visualizar el grafo
+import PointSelection from "./PointSelection"; // Importa el componente para seleccionar puntos en el grafo
+import ShortestPathDisplay from "./ShortestPathDisplay"; // Importa el componente para mostrar el camino más corto
+import { Button } from "@/components/ui/button"; // Importa el componente Button de la carpeta de UI
 
 // Función para generar nombres de nodos basada en el caso de uso
 const generateVertexNames = (size: number, useCase: string): string[] => {
@@ -66,6 +66,7 @@ const generateVertexNames = (size: number, useCase: string): string[] => {
     "Oracle Cloud West",
   ];
 
+  // Devuelve un array de nombres según el caso de uso
   switch (useCase) {
     case "ciudades":
       return cities.slice(0, size);
@@ -77,29 +78,32 @@ const generateVertexNames = (size: number, useCase: string): string[] => {
       return [];
   }
 };
+
 type Option = {
-  value: string;
-  label: string;
+  value: string; // Valor único de la opción
+  label: string; // Etiqueta de la opción que se mostrará al usuario
 };
-type Matrix = number[][];
+
+type Matrix = number[][]; // Definición del tipo de matriz
 type GraphData = {
-  nodes: NodeData[];
-  edges: EdgeData[];
+  nodes: NodeData[]; // Nodos del grafo
+  edges: EdgeData[]; // Aristas del grafo
 };
 
 type EdgeData = {
-  source: number;
-  target: number;
-  label: string;
+  source: number; // Índice del nodo de origen
+  target: number; // Índice del nodo de destino
+  label: string; // Etiqueta de la arista
 };
 
 type NodeData = {
-  id: number;
-  x: number;
-  y: number;
-  label: string;
+  id: number; // ID del nodo
+  x: number; // Posición X del nodo
+  y: number; // Posición Y del nodo
+  label: string; // Etiqueta del nodo
 };
 
+// Componente principal DijkstraApp
 const DijkstraApp: React.FC = () => {
   const options: Option[] = [
     { value: "estaciones", label: "Estaciones de tren" },
@@ -107,26 +111,21 @@ const DijkstraApp: React.FC = () => {
     { value: "redes", label: "Redes" },
   ];
 
-  const [useCase, setUseCase] = useState<string>("");
-  const [matrixSize, setMatrixSize] = useState<number | null>(null);
-  const [matrix, setMatrix] = useState<Matrix>([]);
-  const [vertexNames, setVertexNames] = useState<string[]>([]);
-  const [graphData, setGraphData] = useState<GraphData>({
-    nodes: [],
-    edges: [],
-  });
-  const [pointA, setPointA] = useState<string>("");
-  const [pointB, setPointB] = useState<string>("");
-  const [shortestPath, setShortestPath] = useState<string[]>([]);
-  const [shortestPathDistance, setShortestPathDistance] = useState<
-    string | number | null
-  >(null);
-  const [highlightedEdges, setHighlightedEdges] = useState<EdgeData[]>([]);
+  const [useCase, setUseCase] = useState<string>(""); // Estado para almacenar el caso de uso seleccionado
+  const [matrixSize, setMatrixSize] = useState<number | null>(null); // Estado para el tamaño de la matriz
+  const [matrix, setMatrix] = useState<Matrix>([]); // Estado para almacenar la matriz de distancias
+  const [vertexNames, setVertexNames] = useState<string[]>([]); // Estado para almacenar los nombres de los vértices
+  const [graphData, setGraphData] = useState<GraphData>({ nodes: [], edges: [] }); // Estado para almacenar los datos del grafo
+  const [pointA, setPointA] = useState<string>(""); // Estado para el punto A del camino
+  const [pointB, setPointB] = useState<string>(""); // Estado para el punto B del camino
+  const [shortestPath, setShortestPath] = useState<string[]>([]); // Estado para almacenar el camino más corto
+  const [shortestPathDistance, setShortestPathDistance] = useState<string | number | null>(null); // Estado para la distancia del camino más corto
+  const [highlightedEdges, setHighlightedEdges] = useState<EdgeData[]>([]); // Estado para almacenar las aristas resaltadas
 
   // Maneja la creación de la matriz aleatoria de caminos unidireccionales
   const handleGenerateRandomMatrix = () => {
     if (matrixSize) {
-      const randomMatrix = generateRandomMatrixWithOneWayPaths(matrixSize);
+      const randomMatrix = generateRandomMatrixWithOneWayPaths(matrixSize); // Genera una matriz aleatoria
       setMatrix(randomMatrix);
     }
   };
@@ -149,8 +148,9 @@ const DijkstraApp: React.FC = () => {
       }
     }
 
-    setGraphData({ nodes, edges });
+    setGraphData({ nodes, edges }); // Actualiza el estado del grafo
   };
+
   // Genera una matriz aleatoria de caminos unidireccionales con valores aleatorios
   const generateRandomMatrixWithOneWayPaths = (size: number): Matrix => {
     const matrix: Matrix = Array(size)
@@ -165,7 +165,7 @@ const DijkstraApp: React.FC = () => {
           })
       );
 
-    // Asegurarse de que la matriz sea simétrica
+    // Asegura que la matriz sea simétrica
     for (let i = 0; i < size; i++) {
       for (let j = i + 1; j < size; j++) {
         const value = matrix[i][j];
@@ -173,19 +173,20 @@ const DijkstraApp: React.FC = () => {
       }
     }
 
-    return matrix;
+    return matrix; // Devuelve la matriz generada
   };
 
+  // Implementa el algoritmo de Dijkstra para encontrar el camino más corto
   const runDijkstra = (start: string, end: string): string[] => {
     const n = matrix.length;
-    const distances: number[] = Array(n).fill(Infinity);
-    const previous: (number | null)[] = Array(n).fill(null);
-    const visited: boolean[] = Array(n).fill(false);
+    const distances: number[] = Array(n).fill(Infinity); // Inicializa las distancias a infinito
+    const previous: (number | null)[] = Array(n).fill(null); // Almacena el nodo anterior en el camino
+    const visited: boolean[] = Array(n).fill(false); // Almacena si el nodo ha sido visitado
 
-    const startIdx = vertexNames.indexOf(start);
-    const endIdx = vertexNames.indexOf(end);
+    const startIdx = vertexNames.indexOf(start); // Índice del nodo de inicio
+    const endIdx = vertexNames.indexOf(end); // Índice del nodo final
 
-    distances[startIdx] = 0;
+    distances[startIdx] = 0; // La distancia desde el nodo inicial a sí mismo es 0
 
     for (let i = 0; i < n; i++) {
       let u = -1;
@@ -197,17 +198,17 @@ const DijkstraApp: React.FC = () => {
         }
       }
 
-      if (distances[u] === Infinity) break;
+      if (distances[u] === Infinity) break; // Si no hay más nodos accesibles, sale del bucle
 
-      visited[u] = true;
+      visited[u] = true; // Marca el nodo como visitado
 
       // Actualiza las distancias de los vecinos del nodo actual
       for (let v = 0; v < n; v++) {
         if (matrix[u][v] !== 0 && !visited[v]) {
-          const alt = distances[u] + matrix[u][v];
+          const alt = distances[u] + matrix[u][v]; // Calcula la distancia alternativa
           if (alt < distances[v]) {
-            distances[v] = alt;
-            previous[v] = u;
+            distances[v] = alt; // Actualiza la distancia si es menor
+            previous[v] = u; // Actualiza el nodo anterior
           }
         }
       }
@@ -218,21 +219,22 @@ const DijkstraApp: React.FC = () => {
     let u = endIdx;
 
     while (previous[u] !== null) {
-      path.unshift(u);
+      path.unshift(u); // Agrega el nodo al inicio del camino
       u = previous[u] !== null ? (previous[u] as number) : -1; // Asigna -1 si previous[u] es null
     }
 
     if (path.length > 0) {
-      path.unshift(startIdx);
+      path.unshift(startIdx); // Agrega el nodo de inicio al camino
     }
 
-    return path.map((idx) => vertexNames[idx]);
+    return path.map((idx) => vertexNames[idx]); // Devuelve los nombres de los nodos en el camino
   };
 
+  // Maneja el cálculo del camino más corto entre dos puntos
   const handleCalculateShortestPath = () => {
     if (!pointA || !pointB) return; // Asegúrate de que ambos puntos estén seleccionados
-    const path = runDijkstra(pointA, pointB);
-    setShortestPath(path);
+    const path = runDijkstra(pointA, pointB); // Ejecuta el algoritmo de Dijkstra
+    setShortestPath(path); // Actualiza el estado con el camino más corto
 
     // Actualiza las aristas resaltadas para el camino más corto
     if (path.length > 1) {
@@ -240,14 +242,14 @@ const DijkstraApp: React.FC = () => {
       for (let i = 0; i < path.length - 1; i++) {
         const sourceIdx = vertexNames.indexOf(path[i]);
         const targetIdx = vertexNames.indexOf(path[i + 1]);
-        highlighted.push({ source: sourceIdx, target: targetIdx, label: "" });
+        highlighted.push({ source: sourceIdx, target: targetIdx, label: "" }); // Agrega las aristas resaltadas
       }
       setHighlightedEdges(highlighted);
     } else {
       setHighlightedEdges([]); // Si no hay camino, limpiar
     }
 
-    // Sumar la distancia total
+    // Suma la distancia total
     const totalDistance = path.reduce((sum, node, i) => {
       if (i === path.length - 1) return sum; // No sumar el último nodo
       const currentIdx = vertexNames.indexOf(node);
@@ -257,6 +259,7 @@ const DijkstraApp: React.FC = () => {
 
     setShortestPathDistance(totalDistance); // Actualiza la distancia total
   };
+
   return (
     <div className="container mx-auto p-6">
       <h1 className="text-3xl font-bold mb-6 animate-fade-in">
@@ -329,4 +332,6 @@ const DijkstraApp: React.FC = () => {
     </div>
   );
 };
+
+// Exporta el componente principal DijkstraApp para que pueda ser utilizado en otras partes de la aplicación
 export default DijkstraApp;
