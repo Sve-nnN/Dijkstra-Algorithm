@@ -51,7 +51,7 @@ const GraphVisualization: React.FC<GraphVisualizationProps> = ({
                   fontSize="1em" // Tamaño de fuente del texto
                   fontWeight={400} // Peso de fuente del texto
                 >
-                  {edge.label} km // Muestra la distancia en kilómetros
+                  {edge.label} km
                 </text>
               </g>
             );
@@ -71,7 +71,7 @@ const GraphVisualization: React.FC<GraphVisualizationProps> = ({
                 textAnchor="middle" // Centra el texto horizontalmente
                 fill="#333" // Color del texto
               >
-                {node.label} // Muestra la etiqueta del nodo
+                {node.label}
               </text>
             </g>
           ))}
